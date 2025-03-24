@@ -1,0 +1,62 @@
+﻿@model WypozyczalniaGier.Models.Wypozyczenie
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Usuń wypożyczenie</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .info {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #800000;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background-color: #600000;
+            }
+
+        a {
+            color: #800000;
+            text-decoration: none;
+        }
+
+            a:hover {
+                text-decoration: underline;
+            }
+    </style>
+</head>
+<body>
+    <h1>Usuń wypożyczenie</h1>
+
+    <div class="info">
+        <p>Czy na pewno chcesz usunąć wypożyczenie:</p>
+        <p><strong>@(Model.Uzytkownik.Imie + " " + Model.Uzytkownik.Nazwisko)</strong> - <strong>@Model.Gra.Tytul</strong> (od @Model.DataWypozyczenia.ToString("d") do @Model.DataZwrotu.ToString("d"))</p>
+    </div>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="IdWypozyczenia" />
+        <button type="submit">Usuń</button>
+        <p><a href="@Url.Action("Index")">Wróć do listy</a></p>
+    </form>
+</body>
+</html>

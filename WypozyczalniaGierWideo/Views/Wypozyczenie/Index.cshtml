@@ -1,0 +1,128 @@
+﻿@model IEnumerable<WypozyczalniaGier.Models.Wypozyczenie>
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wypożyczenia - Rezerwacja</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+            table th, table td {
+                padding: 12px 15px;
+                text-align: left;
+                border: 1px solid #ddd;
+            }
+
+            table th {
+                background-color: #800000;
+                color: white;
+            }
+
+            table tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+
+            table tr:hover {
+                background-color: #ddd;
+            }
+
+        a {
+            color: #800000;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+            a:hover {
+                text-decoration: underline;
+            }
+
+        .search-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+            .search-container input {
+                padding: 8px;
+                font-size: 16px;
+                width: 250px;
+                margin-right: 10px;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+            }
+
+            .search-container button {
+                padding: 8px 16px;
+                font-size: 16px;
+                background-color: #800000;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+                .search-container button:hover {
+                    background-color: #600000;
+                }
+    </style>
+</head>
+<body>
+    <h1>Lista wypożyczeń</h1>
+
+    <!-- Formularz wyszukiwania -->
+    <div class="search-container">
+        <form method="get" asp-action="Index">
+            <input type="text" name="searchTerm" placeholder="Wyszukaj użytkownika lub grę" value="@ViewData["searchTerm"]" />
+            <button type="submit">Szukaj</button>
+        </form>
+    </div>
+
+    <p><a href="@Url.Action("Create")">Dodaj nowe wypożyczenie</a></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Użytkownik</th>
+                <th>Gra</th>
+                <th>Data wypożyczenia</th>
+                <th>Data zwrotu</th>
+                <th>Koszt</th>
+                <th>Akcja</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@(item.Uzytkownik.Imie + " " + item.Uzytkownik.Nazwisko)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Gra.Tytul)</td>
+                    <td>@Html.DisplayFor(modelItem => item.DataWypozyczenia)</td>
+                    <td>@Html.DisplayFor(modelItem => item.DataZwrotu)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Koszt)</td>
+                    <td>
+                        <a href="@Url.Action("Edit", new { id = item.IdWypozyczenia })">Edytuj</a> |
+                        <a href="@Url.Action("Delete", new { id = item.IdWypozyczenia })">Usuń</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>

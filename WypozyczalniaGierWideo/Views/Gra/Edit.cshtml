@@ -1,0 +1,95 @@
+﻿@model WypozyczalniaGier.Models.Gra
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edytuj grę</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, button {
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        button {
+            background-color: #800000;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background-color: #600000;
+            }
+
+        a {
+            color: #800000;
+            text-decoration: none;
+        }
+
+            a:hover {
+                text-decoration: underline;
+            }
+
+        .validation-error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edytuj grę</h1>
+
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="IdGry" />
+        <div asp-validation-summary="ModelOnly" class="validation-error"></div>
+        <div class="form-group">
+            <label asp-for="Tytul">Tytuł</label>
+            <input asp-for="Tytul" maxlength="100" />
+            <span asp-validation-for="Tytul" class="validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Gatunek">Gatunek</label>
+            <input asp-for="Gatunek" maxlength="50" />
+            <span asp-validation-for="Gatunek" class="validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Platforma">Platforma</label>
+            <input asp-for="Platforma" maxlength="50" />
+            <span asp-validation-for="Platforma" class="validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="CenaZaDzien">Cena za dzień</label>
+            <input asp-for="CenaZaDzien" type="number" step="0.01" />
+            <span asp-validation-for="CenaZaDzien" class="validation-error"></span>
+        </div>
+        <button type="submit">Zapisz</button>
+        <p><a href="@Url.Action("Index")">Wróć do listy</a></p>
+    </form>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+</body>
+</html>

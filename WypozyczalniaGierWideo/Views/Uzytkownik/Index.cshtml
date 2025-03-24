@@ -1,0 +1,162 @@
+﻿@model IEnumerable<WypozyczalniaGier.Models.Uzytkownik>
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Użytkownicy - Rezerwacja</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+            table th, table td {
+                padding: 12px 15px;
+                text-align: left;
+                border: 1px solid #ddd;
+            }
+
+            table th {
+                background-color: #800000;
+                color: white;
+            }
+
+            table tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+
+            table tr:hover {
+                background-color: #ddd;
+            }
+
+        a {
+            color: #800000;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+            a:hover {
+                text-decoration: underline;
+            }
+
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+            .pagination a {
+                margin: 0 5px;
+            }
+
+        .search-form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+            .search-form input[type="text"] {
+                padding: 8px;
+                width: 200px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                font-size: 16px;
+            }
+
+            .search-form button {
+                padding: 8px 15px;
+                background-color: #800000;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                font-size: 16px;
+                cursor: pointer;
+            }
+
+                .search-form button:hover {
+                    background-color: #600000;
+                }
+    </style>
+</head>
+<body>
+    <h1>Lista użytkowników</h1>
+
+    <div class="search-form">
+        <form method="get" action="@Url.Action("Search", "Uzytkownik")">
+            <input type="text" name="lastName" placeholder="Wyszukaj po nazwisku" value="@Context.Request.Query["lastName"]" />
+            <button type="submit">Szukaj</button>
+        </form>
+    </div>
+
+    <p><a href="@Url.Action("Create")">Dodaj nowego użytkownika</a></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Imię</th>
+                <th>Nazwisko</th>
+                <th>Email</th>
+                <th>Akcja</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Imie)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Nazwisko)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                    <td>
+                        <a href="@Url.Action("Edit", new { id = item.IdUzytkownika })">Edytuj</a> |
+                        <a href="@Url.Action("Delete", new { id = item.IdUzytkownika })">Usuń</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @{
+        var pageNumber = ViewBag.PageNumber ?? 1;
+        var pageSize = ViewBag.PageSize ?? 10;
+        var totalCount = ViewBag.TotalCount ?? 0;
+        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+    }
+    <div class="pagination">
+        @if (pageNumber > 1)
+        {
+            <a href="@Url.Action("Index", new { pageNumber = pageNumber - 1, pageSize })">Poprzednia</a>
+        }
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            if (i == pageNumber)
+            {
+                <span>@i</span>
+            }
+            else
+            {
+                <a href="@Url.Action("Index", new { pageNumber = i, pageSize })">@i</a>
+            }
+        }
+        @if (pageNumber < totalPages)
+        {
+            <a href="@Url.Action("Index", new { pageNumber = pageNumber + 1, pageSize })">Następna</a>
+        }
+    </div>
+</body>
+</html>

@@ -1,0 +1,103 @@
+﻿@model WypozyczalniaGier.Models.Wypozyczenie
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dodaj wypożyczenie</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, select, button {
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        button {
+            background-color: #800000;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background-color: #600000;
+            }
+
+        a {
+            color: #800000;
+            text-decoration: none;
+        }
+
+            a:hover {
+                text-decoration: underline;
+            }
+
+        .validation-error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dodaj nowe wypożyczenie</h1>
+
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="All" class="validation-error"></div>
+        <div class="form-group">
+            <label asp-for="IdUzytkownika">Użytkownik</label>
+            <select asp-for="IdUzytkownika" asp-items="@(new SelectList(ViewBag.Uzytkownicy, "IdUzytkownika", "Imie"))" required>
+                <option value="">Wybierz użytkownika</option>
+            </select>
+            <span asp-validation-for="IdUzytkownika" class="validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="IdGry">Gra</label>
+            <select asp-for="IdGry" asp-items="@(new SelectList(ViewBag.Gry, "IdGry", "Tytul"))" required>
+                <option value="">Wybierz grę</option>
+            </select>
+            <span asp-validation-for="IdGry" class="validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="DataWypozyczenia">Data wypożyczenia</label>
+            <input asp-for="DataWypozyczenia" type="date" required />
+            <span asp-validation-for="DataWypozyczenia" class="validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="DataZwrotu">Data zwrotu</label>
+            <input asp-for="DataZwrotu" type="date" required />
+            <span asp-validation-for="DataZwrotu" class="validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Koszt">Koszt</label>
+            <input asp-for="Koszt" type="number" step="0.01" required />
+            <span asp-validation-for="Koszt" class="validation-error"></span>
+        </div>
+        <button type="submit">Dodaj</button>
+        <p><a href="@Url.Action("Index")">Wróć do listy</a></p>
+    </form>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+</body>
+</html>

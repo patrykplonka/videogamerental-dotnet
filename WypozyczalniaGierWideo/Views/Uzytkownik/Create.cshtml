@@ -1,0 +1,89 @@
+﻿@model WypozyczalniaGier.Models.Uzytkownik
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dodaj użytkownika</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, button {
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        button {
+            background-color: #800000;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background-color: #600000;
+            }
+
+        a {
+            color: #800000;
+            text-decoration: none;
+        }
+
+            a:hover {
+                text-decoration: underline;
+            }
+
+        .validation-error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dodaj nowego użytkownika</h1>
+
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="All" class="validation-error"></div>
+        <div class="form-group">
+            <label asp-for="Imie">Imię</label>
+            <input asp-for="Imie" maxlength="50" required />
+            <span asp-validation-for="Imie" class="validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Nazwisko">Nazwisko</label>
+            <input asp-for="Nazwisko" maxlength="50" required />
+            <span asp-validation-for="Nazwisko" class="validation-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Email">Email</label>
+            <input asp-for="Email" maxlength="100" type="email" required />
+            <span asp-validation-for="Email" class="validation-error"></span>
+        </div>
+        <button type="submit">Dodaj</button>
+        <p><a href="@Url.Action("Index")">Wróć do listy</a></p>
+    </form>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+</body>
+</html>
