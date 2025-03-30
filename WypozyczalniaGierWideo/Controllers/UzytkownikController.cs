@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using WypozyczalniaGier.Models;
 using WypozyczalniaGier.Services;
+using WypozyczalniaGier.ViewModels;
 
 namespace WypozyczalniaGier.Controllers
 {
@@ -19,33 +20,41 @@ namespace WypozyczalniaGier.Controllers
         public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 10)
         {
             var (items, totalCount) = await _uzytkownikService.GetPaginatedAsync(pageNumber, pageSize);
+            var viewModelItems = items.Select(u => new UzytkownikViewModel
+            {
+                IdUzytkownika = u.IdUzytkownika,
+                Imie = u.Imie,
+                Nazwisko = u.Nazwisko,
+                Email = u.Email
+            }).ToList();
+
             ViewBag.TotalCount = totalCount;
             ViewBag.PageNumber = pageNumber;
             ViewBag.PageSize = pageSize;
-            return View(items);
+            return View(viewModelItems);
         }
 
         [HttpGet]
         public IActionResult Create()
         {
-            return View();
+            return View(new UzytkownikViewModel());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Uzytkownik uzytkownik)
+        public async Task<IActionResult> Create(UzytkownikViewModel viewModel)
         {
-            uzytkownik.Wypozyczenia = uzytkownik.Wypozyczenia ?? new List<Wypozyczenie>();
-
-            if (ModelState.ContainsKey("Wypozyczenia"))
-            {
-                ModelState["Wypozyczenia"].Errors.Clear();
-                ModelState["Wypozyczenia"].ValidationState =
-                    Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Valid;
-            }
-
             if (!ModelState.IsValid)
-                return View(uzytkownik);
+                return View(viewModel);
+
+            var uzytkownik = new Uzytkownik
+            {
+                IdUzytkownika = viewModel.IdUzytkownika,
+                Imie = viewModel.Imie,
+                Nazwisko = viewModel.Nazwisko,
+                Email = viewModel.Email,
+                Wypozyczenia = new List<Wypozyczenie>()
+            };
 
             try
             {
@@ -55,7 +64,7 @@ namespace WypozyczalniaGier.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Błąd podczas dodawania użytkownika: {ex.Message}");
-                return View(uzytkownik);
+                return View(viewModel);
             }
         }
 
@@ -66,25 +75,34 @@ namespace WypozyczalniaGier.Controllers
             if (uzytkownik == null)
                 return NotFound();
 
-            return View(uzytkownik);
+            var viewModel = new UzytkownikViewModel
+            {
+                IdUzytkownika = uzytkownik.IdUzytkownika,
+                Imie = uzytkownik.Imie,
+                Nazwisko = uzytkownik.Nazwisko,
+                Email = uzytkownik.Email
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Uzytkownik uzytkownik)
+        public async Task<IActionResult> Edit(int id, UzytkownikViewModel viewModel)
         {
-            if (id != uzytkownik.IdUzytkownika)
+            if (id != viewModel.IdUzytkownika)
                 return BadRequest();
 
-            if (ModelState.ContainsKey("Wypozyczenia"))
-            {
-                ModelState["Wypozyczenia"].Errors.Clear();
-                ModelState["Wypozyczenia"].ValidationState =
-                    Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Valid;
-            }
-
             if (!ModelState.IsValid)
-                return View(uzytkownik);
+                return View(viewModel);
+
+            var uzytkownik = await _uzytkownikService.GetByIdAsync(id);
+            if (uzytkownik == null)
+                return NotFound();
+
+            uzytkownik.Imie = viewModel.Imie;
+            uzytkownik.Nazwisko = viewModel.Nazwisko;
+            uzytkownik.Email = viewModel.Email;
 
             try
             {
@@ -94,7 +112,7 @@ namespace WypozyczalniaGier.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Błąd podczas edytowania użytkownika: {ex.Message}");
-                return View(uzytkownik);
+                return View(viewModel);
             }
         }
 
@@ -105,7 +123,15 @@ namespace WypozyczalniaGier.Controllers
             if (uzytkownik == null)
                 return NotFound();
 
-            return View(uzytkownik);
+            var viewModel = new UzytkownikViewModel
+            {
+                IdUzytkownika = uzytkownik.IdUzytkownika,
+                Imie = uzytkownik.Imie,
+                Nazwisko = uzytkownik.Nazwisko,
+                Email = uzytkownik.Email
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -126,17 +152,30 @@ namespace WypozyczalniaGier.Controllers
             {
                 ModelState.AddModelError("", $"Błąd podczas usuwania użytkownika: {ex.Message}");
                 var uzytkownik = await _uzytkownikService.GetByIdAsync(id);
-                return View("Delete", uzytkownik);
+                var viewModel = new UzytkownikViewModel
+                {
+                    IdUzytkownika = uzytkownik.IdUzytkownika,
+                    Imie = uzytkownik.Imie,
+                    Nazwisko = uzytkownik.Nazwisko,
+                    Email = uzytkownik.Email
+                };
+                return View("Delete", viewModel);
             }
         }
-
-        // Dodatkowe akcje wykorzystujące własne metody z serwisu
 
         [HttpGet]
         public async Task<IActionResult> Search(string lastName)
         {
             var results = await _uzytkownikService.SearchByLastNameAsync(lastName ?? "");
-            return View("Index", results);
+            var viewModelResults = results.Select(u => new UzytkownikViewModel
+            {
+                IdUzytkownika = u.IdUzytkownika,
+                Imie = u.Imie,
+                Nazwisko = u.Nazwisko,
+                Email = u.Email
+            }).ToList();
+
+            return View("Index", viewModelResults);
         }
 
         [HttpGet]

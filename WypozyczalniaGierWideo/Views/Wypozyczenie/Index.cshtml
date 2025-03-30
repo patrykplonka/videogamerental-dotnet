@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WypozyczalniaGier.Models.Wypozyczenie>
+﻿@model IEnumerable<WypozyczalniaGier.ViewModels.WypozyczenieViewModel>
 
 <!DOCTYPE html>
 <html lang="pl">
@@ -111,8 +111,8 @@
             @foreach (var item in Model)
             {
                 <tr>
-                    <td>@(item.Uzytkownik.Imie + " " + item.Uzytkownik.Nazwisko)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Gra.Tytul)</td>
+                    <td>@item.UzytkownikNazwa</td>
+                    <td>@item.GraTytul</td>
                     <td>@Html.DisplayFor(modelItem => item.DataWypozyczenia)</td>
                     <td>@Html.DisplayFor(modelItem => item.DataZwrotu)</td>
                     <td>@Html.DisplayFor(modelItem => item.Koszt)</td>

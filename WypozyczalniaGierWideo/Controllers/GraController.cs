@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using WypozyczalniaGier.Models;
 using WypozyczalniaGier.Services;
+using WypozyczalniaGier.ViewModels;
 
 namespace WypozyczalniaGier.Controllers
 {
@@ -19,10 +22,19 @@ namespace WypozyczalniaGier.Controllers
         public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 10)
         {
             var (items, totalCount) = await _graService.GetPaginatedAsync(pageNumber, pageSize);
+            var viewModels = items.Select(g => new GraViewModel
+            {
+                IdGry = g.IdGry,
+                Tytul = g.Tytul,
+                Gatunek = g.Gatunek,
+                Platforma = g.Platforma,
+                CenaZaDzien = g.CenaZaDzien
+            }).ToList();
+
             ViewBag.TotalCount = totalCount;
             ViewBag.PageNumber = pageNumber;
             ViewBag.PageSize = pageSize;
-            return View(items);
+            return View(viewModels);
         }
 
         [HttpGet]
@@ -33,32 +45,30 @@ namespace WypozyczalniaGier.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Gra gra)
+        public async Task<IActionResult> Create(GraViewModel viewModel)
         {
-            gra.Wypozyczenia = gra.Wypozyczenia ?? new List<Wypozyczenie>();
-
-            // Usuń błędy walidacji dla pola Wypozyczenia
-            if (ModelState.ContainsKey("Wypozyczenia"))
-            {
-                ModelState["Wypozyczenia"].Errors.Clear();
-                ModelState["Wypozyczenia"].ValidationState =
-                    Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Valid;
-            }
-
             if (!ModelState.IsValid)
             {
-                return View(gra);
+                return View(viewModel);
             }
 
             try
             {
+                var gra = new Gra
+                {
+                    Tytul = viewModel.Tytul,
+                    Gatunek = viewModel.Gatunek,
+                    Platforma = viewModel.Platforma,
+                    CenaZaDzien = viewModel.CenaZaDzien,
+                    Wypozyczenia = new List<Wypozyczenie>()
+                };
                 await _graService.AddAsync(gra);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Błąd podczas dodawania gry: {ex.Message}");
-                return View(gra);
+                return View(viewModel);
             }
         }
 
@@ -69,36 +79,45 @@ namespace WypozyczalniaGier.Controllers
             if (gra == null)
                 return NotFound();
 
-            return View(gra);
+            var viewModel = new GraViewModel
+            {
+                IdGry = gra.IdGry,
+                Tytul = gra.Tytul,
+                Gatunek = gra.Gatunek,
+                Platforma = gra.Platforma,
+                CenaZaDzien = gra.CenaZaDzien
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Gra gra)
+        public async Task<IActionResult> Edit(int id, GraViewModel viewModel)
         {
-            if (id != gra.IdGry)
+            if (id != viewModel.IdGry)
                 return BadRequest();
 
-            // Usuń błędy walidacji dla pola Wypozyczenia
-            if (ModelState.ContainsKey("Wypozyczenia"))
-            {
-                ModelState["Wypozyczenia"].Errors.Clear();
-                ModelState["Wypozyczenia"].ValidationState =
-                    Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Valid;
-            }
-
             if (!ModelState.IsValid)
-                return View(gra);
+                return View(viewModel);
 
             try
             {
+                var gra = new Gra
+                {
+                    IdGry = viewModel.IdGry,
+                    Tytul = viewModel.Tytul,
+                    Gatunek = viewModel.Gatunek,
+                    Platforma = viewModel.Platforma,
+                    CenaZaDzien = viewModel.CenaZaDzien
+                };
                 await _graService.UpdateAsync(gra);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Błąd podczas edytowania gry: {ex.Message}");
-                return View(gra);
+                return View(viewModel);
             }
         }
 
@@ -109,7 +128,16 @@ namespace WypozyczalniaGier.Controllers
             if (gra == null)
                 return NotFound();
 
-            return View(gra);
+            var viewModel = new GraViewModel
+            {
+                IdGry = gra.IdGry,
+                Tytul = gra.Tytul,
+                Gatunek = gra.Gatunek,
+                Platforma = gra.Platforma,
+                CenaZaDzien = gra.CenaZaDzien
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -126,24 +154,46 @@ namespace WypozyczalniaGier.Controllers
             {
                 ModelState.AddModelError("", $"Błąd podczas usuwania gry: {ex.Message}");
                 var gra = await _graService.GetByIdAsync(id);
-                return View("Delete", gra);
+                var viewModel = new GraViewModel
+                {
+                    IdGry = gra.IdGry,
+                    Tytul = gra.Tytul,
+                    Gatunek = gra.Gatunek,
+                    Platforma = gra.Platforma,
+                    CenaZaDzien = gra.CenaZaDzien
+                };
+                return View("Delete", viewModel);
             }
         }
-
-        // Dodatkowe akcje wykorzystujące własne metody z serwisu
 
         [HttpGet]
         public async Task<IActionResult> Search(string title)
         {
             var results = await _graService.SearchByTitleAsync(title ?? "");
-            return View("Index", results);
+            var viewModels = results.Select(g => new GraViewModel
+            {
+                IdGry = g.IdGry,
+                Tytul = g.Tytul,
+                Gatunek = g.Gatunek,
+                Platforma = g.Platforma,
+                CenaZaDzien = g.CenaZaDzien
+            }).ToList();
+            return View("Index", viewModels);
         }
 
         [HttpGet]
         public async Task<IActionResult> MostBorrowed(int topN = 5)
         {
             var mostBorrowed = await _graService.GetMostBorrowedAsync(topN);
-            return View("Index", mostBorrowed);
+            var viewModels = mostBorrowed.Select(g => new GraViewModel
+            {
+                IdGry = g.IdGry,
+                Tytul = g.Tytul,
+                Gatunek = g.Gatunek,
+                Platforma = g.Platforma,
+                CenaZaDzien = g.CenaZaDzien
+            }).ToList();
+            return View("Index", viewModels);
         }
 
         [HttpGet]

@@ -2,10 +2,11 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using WypozyczalniaGier.Models;
+using WypozyczalniaGier.ViewModels;
 using WypozyczalniaGier.Services;
 using Microsoft.EntityFrameworkCore;
 using WypozyczalniaGier.Repositories;
+using WypozyczalniaGier.Models;
 
 namespace WypozyczalniaGier.Controllers
 {
@@ -24,26 +25,36 @@ namespace WypozyczalniaGier.Controllers
             _uzytkownikRepository = uzytkownikRepository;
             _graRepository = graRepository;
         }
+
         [HttpGet]
         public async Task<IActionResult> Index(string searchTerm)
         {
-            var wypozyczenia = await _wypozyczenieService.GetAllAsync();
+            var wypozyczenia = (await _wypozyczenieService.GetAllAsync())
+                .Select(w => new WypozyczenieViewModel
+                {
+                    IdWypozyczenia = w.IdWypozyczenia,
+                    IdUzytkownika = w.Uzytkownik.IdUzytkownika,
+                    UzytkownikNazwa = w.Uzytkownik.Imie + " " + w.Uzytkownik.Nazwisko,
+                    IdGry = w.Gra.IdGry,
+                    GraTytul = w.Gra.Tytul,
+                    DataWypozyczenia = w.DataWypozyczenia,
+                    DataZwrotu = w.DataZwrotu,
+                    DataZwrotuRzeczywista = w.DataZwrotuRzeczywista,
+                    Kara = w.Kara,
+                    Koszt = w.Koszt
+                }).ToList();
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 wypozyczenia = wypozyczenia
-                    .Where(w => w.Uzytkownik.Imie.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                w.Uzytkownik.Nazwisko.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                w.Gra.Tytul.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    .Where(w => w.UzytkownikNazwa.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                                w.GraTytul.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
 
-            // Przekazanie wartości searchTerm do widoku
             ViewData["searchTerm"] = searchTerm;
-
             return View(wypozyczenia);
         }
-
 
         [HttpGet]
         public async Task<IActionResult> Create()
@@ -55,27 +66,27 @@ namespace WypozyczalniaGier.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Wypozyczenie wypozyczenie)
+        public async Task<IActionResult> Create(WypozyczenieViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 ViewBag.Uzytkownicy = await _uzytkownikRepository.GetAllAsync().ToListAsync();
                 ViewBag.Gry = await _graRepository.GetAllAsync().ToListAsync();
-                return View(wypozyczenie);
+                return View(model);
             }
 
-            try
+            var wypozyczenie = new Wypozyczenie
             {
-                await _wypozyczenieService.AddAsync(wypozyczenie);
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Błąd: {ex.Message}");
-                ViewBag.Uzytkownicy = await _uzytkownikRepository.GetAllAsync().ToListAsync();
-                ViewBag.Gry = await _graRepository.GetAllAsync().ToListAsync();
-                return View(wypozyczenie);
-            }
+                IdUzytkownika = model.IdUzytkownika,
+                IdGry = model.IdGry,
+                DataWypozyczenia = model.DataWypozyczenia,
+                DataZwrotu = model.DataZwrotu,
+                Kara = model.Kara,
+                Koszt = model.Koszt
+            };
+
+            await _wypozyczenieService.AddAsync(wypozyczenie);
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
@@ -84,62 +95,57 @@ namespace WypozyczalniaGier.Controllers
             var wypozyczenie = await _wypozyczenieService.GetByIdAsync(id);
             if (wypozyczenie == null) return NotFound();
 
+            var model = new WypozyczenieViewModel
+            {
+                IdWypozyczenia = wypozyczenie.IdWypozyczenia,
+                IdUzytkownika = wypozyczenie.IdUzytkownika,
+                IdGry = wypozyczenie.IdGry,
+                DataWypozyczenia = wypozyczenie.DataWypozyczenia,
+                DataZwrotu = wypozyczenie.DataZwrotu,
+                DataZwrotuRzeczywista = wypozyczenie.DataZwrotuRzeczywista,
+                Kara = wypozyczenie.Kara,
+                Koszt = wypozyczenie.Koszt
+            };
+
             ViewBag.Uzytkownicy = await _uzytkownikRepository.GetAllAsync().ToListAsync();
             ViewBag.Gry = await _graRepository.GetAllAsync().ToListAsync();
-            return View(wypozyczenie);
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Wypozyczenie wypozyczenie)
+        public async Task<IActionResult> Edit(int id, WypozyczenieViewModel model)
         {
-            if (id != wypozyczenie.IdWypozyczenia) return BadRequest();
+            if (id != model.IdWypozyczenia) return BadRequest();
 
             if (!ModelState.IsValid)
             {
                 ViewBag.Uzytkownicy = await _uzytkownikRepository.GetAllAsync().ToListAsync();
                 ViewBag.Gry = await _graRepository.GetAllAsync().ToListAsync();
-                return View(wypozyczenie);
+                return View(model);
             }
 
-            try
-            {
-                await _wypozyczenieService.UpdateAsync(wypozyczenie);
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Błąd: {ex.Message}");
-                ViewBag.Uzytkownicy = await _uzytkownikRepository.GetAllAsync().ToListAsync();
-                ViewBag.Gry = await _graRepository.GetAllAsync().ToListAsync();
-                return View(wypozyczenie);
-            }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Delete(int id)
-        {
             var wypozyczenie = await _wypozyczenieService.GetByIdAsync(id);
             if (wypozyczenie == null) return NotFound();
 
-            return View(wypozyczenie);
+            wypozyczenie.IdUzytkownika = model.IdUzytkownika;
+            wypozyczenie.IdGry = model.IdGry;
+            wypozyczenie.DataWypozyczenia = model.DataWypozyczenia;
+            wypozyczenie.DataZwrotu = model.DataZwrotu;
+            wypozyczenie.DataZwrotuRzeczywista = model.DataZwrotuRzeczywista;
+            wypozyczenie.Kara = model.Kara;
+            wypozyczenie.Koszt = model.Koszt;
+
+            await _wypozyczenieService.UpdateAsync(wypozyczenie);
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            try
-            {
-                await _wypozyczenieService.DeleteAsync(id);
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Błąd: {ex.Message}");
-                var wypozyczenie = await _wypozyczenieService.GetByIdAsync(id);
-                return View("Delete", wypozyczenie);
-            }
+            await _wypozyczenieService.DeleteAsync(id);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

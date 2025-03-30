@@ -1,4 +1,4 @@
-﻿@model WypozyczalniaGier.Models.Wypozyczenie
+﻿@model WypozyczalniaGier.ViewModels.WypozyczenieViewModel
 
 <!DOCTYPE html>
 <html lang="pl">
@@ -50,7 +50,7 @@
 
     <div class="info">
         <p>Czy na pewno chcesz usunąć wypożyczenie:</p>
-        <p><strong>@(Model.Uzytkownik.Imie + " " + Model.Uzytkownik.Nazwisko)</strong> - <strong>@Model.Gra.Tytul</strong> (od @Model.DataWypozyczenia.ToString("d") do @Model.DataZwrotu.ToString("d"))</p>
+        <p><strong>@Model.UzytkownikNazwa</strong> - <strong>@Model.GraTytul</strong> (od @Model.DataWypozyczenia.ToString("d") do @Model.DataZwrotu.ToString("d"))</p>
     </div>
 
     <form asp-action="Delete" method="post">
