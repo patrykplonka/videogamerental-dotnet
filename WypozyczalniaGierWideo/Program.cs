@@ -1,29 +1,35 @@
-using WypozyczalniaGier.Data;
+﻿using WypozyczalniaGier.Data;
 using WypozyczalniaGier.Repositories;
-using WypozyczalniaGier.Services; // Dodaj import dla serwisu
+using WypozyczalniaGier.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Dodaj kontekst bazy danych
+// Baza danych
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Rejestracja repozytori�w
+// Rejestracja repozytoriów i serwisów
 builder.Services.AddScoped<IWypozyczenieRepository, WypozyczenieRepository>();
 builder.Services.AddScoped<IUzytkownikRepository, UzytkownikRepository>();
 builder.Services.AddScoped<IGraRepository, GraRepository>();
-
-// Rejestracja serwisu IGraService
 builder.Services.AddScoped<IGraService, GraService>();
 builder.Services.AddScoped<IUzytkownikService, UzytkownikService>();
-builder.Services.AddScoped<IWypozyczenieService,WypozyczenieService>();
+builder.Services.AddScoped<IWypozyczenieService, WypozyczenieService>();
 
+// MVC
 builder.Services.AddControllersWithViews();
+
+// ✅ Nowoczesna rejestracja FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<WypozyczalniaGier.ViewModels.GraViewModel>();
 
 var app = builder.Build();
 
-// Konfiguracja middleware
+// Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
